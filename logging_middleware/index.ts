@@ -7,6 +7,12 @@ export type BackendPackage = "cache" | "controller" | "cron job" | "db" | "domai
 
 export type Package = FrontendPackage | BackendPackage;
 
+let tokenProvider: (() => Promise<string | undefined>) | null = null;
+
+export function setTokenProvider(provider: () => Promise<string | undefined>) {
+  tokenProvider = provider;
+}
+
 const VALID_STACKS = new Set(["backend", "frontend"]);
 const VALID_LEVELS = new Set(["info", "warn", "error", "fatal"]);
 const VALID_FRONTEND_PACKAGES = new Set(["api", "component", "hook", "page", "state", "style", "auth", "config", "middleware", "utils"]);
@@ -39,9 +45,14 @@ export async function Log(stack: Stack, level: Level, pkg: Package, message: str
     return;
   }
 
-  const token = process.env.BEARER_TOKEN;
+  let token = process.env.BEARER_TOKEN;
+  if (tokenProvider) {
+    const freshToken = await tokenProvider();
+    if (freshToken) token = freshToken;
+  }
+
   if (!token) {
-    console.error('BEARER_TOKEN environment variable is not set.');
+    console.error('No authorization token available for logging middleware.');
     return;
   }
 

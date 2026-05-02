@@ -1,12 +1,13 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
 import path from 'path';
-import { Log } from '../../logging_middleware';
+import { Log, setTokenProvider } from '../../logging_middleware';
+import { getToken } from './auth';
 
 // Load .env from the root of notification_app_be
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-const BEARER_TOKEN = process.env.BEARER_TOKEN;
+setTokenProvider(getToken);
 
 interface Notification {
   [key: string]: any;
@@ -93,13 +94,14 @@ async function run() {
   try {
     await Log("backend", "info", "utils", `Starting priority inbox fetch process for top ${n}`);
     
-    if (!BEARER_TOKEN) {
-      throw new Error("BEARER_TOKEN is not defined in .env file.");
+    const token = await getToken();
+    if (!token) {
+      throw new Error("Unable to fetch valid authentication token.");
     }
 
     const response = await axios.get('http://20.207.122.201/evaluation-service/notifications', {
       headers: {
-        Authorization: `Bearer ${BEARER_TOKEN}`
+        Authorization: `Bearer ${token}`
       }
     });
 

@@ -36,15 +36,20 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.setTokenProvider = setTokenProvider;
 exports.Log = Log;
 var axios_1 = require("axios");
+var tokenProvider = null;
+function setTokenProvider(provider) {
+    tokenProvider = provider;
+}
 var VALID_STACKS = new Set(["backend", "frontend"]);
 var VALID_LEVELS = new Set(["info", "warn", "error", "fatal"]);
 var VALID_FRONTEND_PACKAGES = new Set(["api", "component", "hook", "page", "state", "style", "auth", "config", "middleware", "utils"]);
 var VALID_BACKEND_PACKAGES = new Set(["cache", "controller", "cron job", "db", "domain", "handler", "repository", "route", "service", "auth", "config", "middleware", "utils"]);
 function Log(stack, level, pkg, message) {
     return __awaiter(this, void 0, void 0, function () {
-        var token, safeMessage, error_1;
+        var token, freshToken, safeMessage, error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -70,14 +75,22 @@ function Log(stack, level, pkg, message) {
                         return [2 /*return*/];
                     }
                     token = process.env.BEARER_TOKEN;
+                    if (!tokenProvider) return [3 /*break*/, 2];
+                    return [4 /*yield*/, tokenProvider()];
+                case 1:
+                    freshToken = _a.sent();
+                    if (freshToken)
+                        token = freshToken;
+                    _a.label = 2;
+                case 2:
                     if (!token) {
-                        console.error('BEARER_TOKEN environment variable is not set.');
+                        console.error('No authorization token available for logging middleware.');
                         return [2 /*return*/];
                     }
                     safeMessage = message.length > 48 ? message.substring(0, 48) : message;
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, 3, , 4]);
+                    _a.label = 3;
+                case 3:
+                    _a.trys.push([3, 5, , 6]);
                     return [4 /*yield*/, axios_1.default.post('http://20.207.122.201/evaluation-service/logs', {
                             stack: stack,
                             level: level,
@@ -88,14 +101,14 @@ function Log(stack, level, pkg, message) {
                                 'Authorization': "Bearer ".concat(token)
                             }
                         })];
-                case 2:
+                case 4:
                     _a.sent();
-                    return [3 /*break*/, 4];
-                case 3:
+                    return [3 /*break*/, 6];
+                case 5:
                     error_1 = _a.sent();
                     console.error('Failed to send log:', error_1);
-                    return [3 /*break*/, 4];
-                case 4: return [2 /*return*/];
+                    return [3 /*break*/, 6];
+                case 6: return [2 /*return*/];
             }
         });
     });

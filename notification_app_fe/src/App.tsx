@@ -10,14 +10,43 @@ const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#1976d2',
+      main: '#0f172a',
     },
     background: {
-      default: '#f5f5f5',
+      default: '#f8fafc',
+      paper: '#ffffff',
+    },
+    text: {
+      primary: '#0f172a',
+      secondary: '#64748b',
     }
   },
   typography: {
     fontFamily: 'Inter, Roboto, sans-serif',
+    h4: { fontWeight: 600, letterSpacing: '-0.02em' },
+    h5: { fontWeight: 600, letterSpacing: '-0.02em' },
+    h6: { fontWeight: 600, letterSpacing: '-0.01em' },
+    button: { textTransform: 'none', fontWeight: 500 },
+  },
+  shape: {
+    borderRadius: 8,
+  },
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          boxShadow: 'none',
+          border: '1px solid #e2e8f0',
+        }
+      }
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: '6px',
+        }
+      }
+    }
   }
 });
 

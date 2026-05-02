@@ -2,7 +2,8 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import axios from 'axios';
 import dotenv from 'dotenv';
-import { Log } from '../logging_middleware/index';
+import { Log, setTokenProvider } from '../logging_middleware/index';
+import { getToken } from './src/auth';
 
 dotenv.config();
 
@@ -12,7 +13,7 @@ const PORT = 3001;
 app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(express.json());
 
-const BEARER_TOKEN = process.env.BEARER_TOKEN;
+setTokenProvider(getToken);
 
 // GET /api/notifications
 app.get('/api/notifications', async (req: Request, res: Response) => {
@@ -21,10 +22,11 @@ app.get('/api/notifications', async (req: Request, res: Response) => {
   try {
     Log("backend", "info", "handler", `Fetching notifications with params: ${JSON.stringify(req.query)}`);
 
+    const token = await getToken();
     const response = await axios.get('http://20.207.122.201/evaluation-service/notifications', {
       params: { limit, page, notification_type },
       headers: {
-        Authorization: `Bearer ${BEARER_TOKEN}`
+        Authorization: `Bearer ${token}`
       }
     });
 
@@ -43,9 +45,10 @@ app.get('/api/notifications/priority', async (req: Request, res: Response) => {
   try {
     Log("backend", "info", "handler", `Fetching all notifications for priority ranking, top ${n}`);
     
+    const token = await getToken();
     const response = await axios.get('http://20.207.122.201/evaluation-service/notifications', {
       headers: {
-        Authorization: `Bearer ${BEARER_TOKEN}`
+        Authorization: `Bearer ${token}`
       }
     });
 
